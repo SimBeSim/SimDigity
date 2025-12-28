@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>SimDigity | 3D Fysica Validatie</title>
+    <style>
+        body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; }
+        #ui { position: absolute; top: 20px; left: 20px; color: #0f0; pointer-events: none; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <h1>SimDigity: Proto-Civilisatie</h1>
+        <p>Status: Simulatie Actief</p>
+        <p>Doel: Validatie van Natuurwetten (g ≈ 9.81 m/s²)</p>
+    </div>
+
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // 1. Scene & Camera (Onze waarneming van de werkelijkheid)
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 2. De Toren (Geometrie van de waarheid)
+        // We simuleren de Twin Towers verhoudingen (63m x 63m x 417m)
+        const geometry = new THREE.BoxGeometry(6.3, 41.7, 6.3); // Schaal 1:10
+        const material = new THREE.MeshPhongMaterial({ color: 0x555555, wireframe: false });
+        const tower = new THREE.Mesh(geometry, material);
+        scene.add(tower);
+
+        // 3. De Grond (Het nulpunt van de vrije val)
+        const floorGeo = new THREE.PlaneGeometry(100, 100);
+        const floorMat = new THREE.MeshPhongMaterial({ color: 0x111111 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -21; // Bodem van de toren
+        scene.add(floor);
+
+        // 4. Verlichting (Tegen de duisternis van de Matrix)
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(10, 20, 10);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040));
+
+        camera.position.set(0, 10, 80);
+
+        // 5. Animatie Loop (Lifelines in actie)
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Langzame rotatie voor perspectief
+            tower.rotation.y += 0.005;
+            
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Responsive resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
