@@ -2,19 +2,69 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>SimDigity | WTC & Boeing Validatie</title>
+    <title>SimDigity | Interactieve Validatie</title>
     <style>
         body { margin: 0; background-color: #FFF; overflow: hidden; font-family: sans-serif; }
+        /* Bestaande UI links */
         #ui { position: absolute; top: 20px; left: 20px; color: #333; pointer-events: none; }
+        
+        /* NIEUW: Het Besturingspaneel rechts */
+        #controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(245, 245, 245, 0.9); /* Lichtgrijs en beetje doorzichtig */
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 250px;
+            color: #333;
+        }
+        #controls h3 { margin-top: 0; font-size: 1.1em; border-bottom: 1px solid #ccc; padding-bottom: 5px;}
+        #controls h4 { margin: 10px 0 5px 0; font-size: 0.95em; color: #555; }
+        .control-group { margin-bottom: 10px; }
+        .control-group label { display: block; font-size: 0.85em; margin-bottom: 3px; }
+        input[type=range] { width: 100%; cursor: pointer; }
+
         canvas { display: block; }
     </style>
 </head>
 <body>
     <div id="ui">
-        <h1>SimDigity: Multi-Object Validatie</h1>
-        <p>Status: Fysica-inspectie Boeing 767 & WTC</p>
-        <p>Schaal: 1:10 (Real-world metrics)</p>
+        <h1>SimDigity: Interactieve Validatie</h1>
+        <p>Status: Besturing Geactiveerd</p>
+        <p>Schaal: 1:10 (WTC & Boeing 767)</p>
     </div>
+
+    <div id="controls">
+        <h3>Besturingspaneel</h3>
+        
+        <div class="control-group">
+            <label for="speedSlider">Rotatiesnelheid Camera</label>
+            <input type="range" id="speedSlider" min="0" max="0.01" step="0.0001" value="0.002">
+        </div>
+
+        <h4>Vliegtuig 1 (Blauw)</h4>
+        <div class="control-group">
+            <label for="p1x">Positie X (Noord/Zuid)</label>
+            <input type="range" id="p1x" min="-150" max="150" step="1" value="-40">
+        </div>
+        <div class="control-group">
+            <label for="p1z">Positie Z (Oost/West)</label>
+            <input type="range" id="p1z" min="-150" max="150" step="1" value="10">
+        </div>
+
+        <h4>Vliegtuig 2 (Rood)</h4>
+        <div class="control-group">
+            <label for="p2x">Positie X (Noord/Zuid)</label>
+            <input type="range" id="p2x" min="-150" max="150" step="1" value="40">
+        </div>
+        <div class="control-group">
+            <label for="p2z">Positie Z (Oost/West)</label>
+            <input type="range" id="p2z" min="-150" max="150" step="1" value="40">
+        </div>
+    </div>
+
 
     <script type="importmap">
         { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
@@ -23,104 +73,65 @@
     <script type="module">
         import * as THREE from 'three';
 
+        // --- SETUP (Hetzelfde als voorheen) ---
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0xffffff);
-        
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // --- 1. FUNCTIE VOOR DE BOEING 767-200 (Schaal 1:10) ---
+        // --- FUNCTIES VOOR OBJECTEN (Hetzelfde als voorheen) ---
         function createBoeing767(color) {
             const airplane = new THREE.Group();
-            
-            // Romp (Fuselage): Lengte 48.5m -> 4.85 units
-            const fuselageGeo = new THREE.CylinderGeometry(0.25, 0.25, 4.85, 16);
-            const fuselageMat = new THREE.MeshPhongMaterial({ color: color });
-            const fuselage = new THREE.Mesh(fuselageGeo, fuselageMat);
+            // Romp 48.5m
+            const fuselage = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 4.85, 16), new THREE.MeshPhongMaterial({ color: color }));
             fuselage.rotation.x = Math.PI / 2;
             airplane.add(fuselage);
-
-            // Vleugels (Wings): Spanwijdte 47.6m -> 4.76 units
-            const wingGeo = new THREE.BoxGeometry(4.76, 0.05, 1.2);
-            const wingMat = new THREE.MeshPhongMaterial({ color: color });
-            const wings = new THREE.Mesh(wingGeo, wingMat);
-            wings.position.z = 0.2; // Iets naar voren op de romp
+            // Vleugels 47.6m
+            const wings = new THREE.Mesh(new THREE.BoxGeometry(4.76, 0.05, 1.2), new THREE.MeshPhongMaterial({ color: color }));
+            wings.position.z = 0.2;
             airplane.add(wings);
-
-            // Staartvleugel (Horizontal Stabilizer)
-            const tailWingGeo = new THREE.BoxGeometry(1.5, 0.05, 0.5);
-            const tailWing = new THREE.Mesh(tailWingGeo, wingMat);
+            // Staart
+            const tailWing = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.05, 0.5), new THREE.MeshPhongMaterial({ color: color }));
             tailWing.position.z = -2.1;
             airplane.add(tailWing);
-
-            // Staartvin (Vertical Stabilizer)
-            const finGeo = new THREE.BoxGeometry(0.05, 0.8, 0.6);
-            const fin = new THREE.Mesh(finGeo, wingMat);
-            fin.position.y = 0.4;
-            fin.position.z = -2.1;
+            const fin = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.8, 0.6), new THREE.MeshPhongMaterial({ color: color }));
+            fin.position.y = 0.4; fin.position.z = -2.1;
             airplane.add(fin);
-
             return airplane;
         }
 
-        // --- 2. DE TORENS BOUWEN ---
         function createTower(height, color) {
             const group = new THREE.Group();
-            const width = 6.34; // 63.4m
-            const h = height / 10;
-            const body = new THREE.Mesh(new THREE.BoxGeometry(width, h, width), new THREE.MeshPhongMaterial({ color: color }));
-            group.add(body);
-            // Mechanische banden
+            const width = 6.34; const h = height / 10;
+            group.add(new THREE.Mesh(new THREE.BoxGeometry(width, h, width), new THREE.MeshPhongMaterial({ color: color })));
             [0.07, 0.40, 0.72, 0.98].forEach(y => {
                 const band = new THREE.Mesh(new THREE.BoxGeometry(width + 0.1, 0.5, width + 0.1), new THREE.MeshPhongMaterial({ color: 0x333333 }));
-                band.position.y = (y * h) - (h / 2);
-                group.add(band);
+                band.position.y = (y * h) - (h / 2); group.add(band);
             });
             return group;
         }
 
-        const tower1 = createTower(416.97, 0xdddddd); // WTC 1
-        tower1.position.set(-10, 20.85, -10);
-        scene.add(tower1);
+        // --- PLAATSING OBJECTEN ---
+        const tower1 = createTower(416.97, 0xdddddd);
+        tower1.position.set(-10, 20.85, -10); scene.add(tower1);
+        const tower2 = createTower(415.14, 0x888888);
+        tower2.position.set(10, 20.75, 10); scene.add(tower2);
 
-        const tower2 = createTower(415.14, 0x888888); // WTC 2
-        tower2.position.set(10, 20.75, 10);
-        scene.add(tower2);
-
-        // --- 3. DE VLIEGTUIGEN PLAATSEN ---
-        const plane1 = createBoeing767(0x5555ff); // Blauwachtig vliegtuig
-        plane1.position.set(-40, 35, 10); // Nadert vanuit een hoek
-        plane1.lookAt(-10, 35, -10); // Kijkt richting WTC 1
+        // Vliegtuigen (Startposities moeten matchen met de sliders!)
+        const plane1 = createBoeing767(0x5555ff);
+        plane1.position.set(-40, 35, 10); // Startwaarden van sliders p1x en p1z
+        plane1.lookAt(-10, 35, -10);
         scene.add(plane1);
 
-        const plane2 = createBoeing767(0xff5555); // Roodachtig vliegtuig
-        plane2.position.set(40, 30, 40);
-        plane2.lookAt(10, 30, 10); // Kijkt richting WTC 2
+        const plane2 = createBoeing767(0xff5555);
+        plane2.position.set(40, 30, 40); // Startwaarden van sliders p2x en p2z
+        plane2.lookAt(10, 30, 10);
         scene.add(plane2);
 
-        // Grond en Licht
         const floor = new THREE.Mesh(new THREE.PlaneGeometry(500, 500), new THREE.MeshPhongMaterial({ color: 0xeeeeee }));
-        floor.rotation.x = -Math.PI / 2;
-        scene.add(floor);
+        floor.rotation.x = -Math.PI / 2; scene.add(floor);
+        
         const light = new THREE.DirectionalLight(0xffffff, 1.2);
-        light.position.set(50, 100, 50);
-        scene.add(light);
-        scene.add(new THREE.AmbientLight(0x707070));
-
-        // --- 4. ANIMATIE (Helikopter View) ---
-        let angle = 0;
-        function animate() {
-            requestAnimationFrame(animate);
-            angle += 0.002;
-            camera.position.x = 150 * Math.cos(angle);
-            camera.position.z = 150 * Math.sin(angle);
-            camera.position.y = 80;
-            camera.lookAt(0, 20, 0);
-            renderer.render(scene, camera);
-        }
-        animate();
-    </script>
-</body>
-</html>
+        light.position
