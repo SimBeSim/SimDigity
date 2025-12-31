@@ -2,19 +2,18 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>SimDigity | Fysica & Massa Validatie</title>
+    <title>SimDigity | Thermal Impact Validation</title>
     <style>
         body { margin: 0; background-color: #FFF; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
         canvas { display: block; position: fixed; top: 0; left: 0; z-index: 1; }
         
         #ui { position: absolute; top: 20px; left: 20px; color: #333; z-index: 10; pointer-events: none; }
         
-        /* Data Paneel Linksonder */
         #data-panel {
             position: absolute; bottom: 20px; left: 20px;
-            background: rgba(0, 0, 0, 0.8); color: #0f0; /* Matrix/Hacker stijl voor data */
+            background: rgba(20, 0, 0, 0.9); color: #f22; /* Rood-gloeiende data */
             padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace;
-            z-index: 10; font-size: 0.85em; width: 320px;
+            z-index: 10; font-size: 0.85em; width: 340px; border: 1px solid #f00;
         }
 
         #controls {
@@ -23,38 +22,41 @@
             border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
             width: 280px; z-index: 10; max-height: 90vh; overflow-y: auto;
         }
-        button { width: 100%; padding: 10px; margin-top: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; font-weight: bold; }
         .data-val { color: #fff; font-weight: bold; }
+        input[type=range] { width: 100%; accent-color: #f22; }
+        label { font-size: 0.8em; font-weight: bold; display: block; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div id="ui">
-        <h1>SimDigity: Fysica Validatie</h1>
+        <h1>SimDigity: Thermal Analysis</h1>
     </div>
 
     <div id="data-panel">
-        <div style="border-bottom: 1px solid #0f0; margin-bottom: 5px;">LIVE PHYSICAL DATA</div>
-        Massa WTC 1: <span class="data-val">500.000.000 kg</span><br>
-        Massa Boeing 767: <span class="data-val">179.000 kg</span><br>
-        Kerosine Volume: <span class="data-val">38.000 L</span><br>
-        Energie-Potentieel: <span class="data-val">1.4 Terajoule</span><br>
-        <br>
-        <div style="font-size: 0.8em; color: #aaa;">Theorie: Balk-doorbuiging door hitte verzwakt perimeter kolommen.</div>
+        <div style="border-bottom: 1px solid #f22; margin-bottom: 5px; font-weight: bold;">THERMAL FAILURE DATA</div>
+        Impact Temperatuur: <span class="data-val">~800°C - 1000°C</span><br>
+        Staal Degradatie: <span class="data-val">50% bij 600°C</span><br>
+        Theorie: <span class="data-val">Inwaartse trek door doorbuiging</span><br>
+        Status: <span id="status-text" style="color: #fff;">Hitte-effect Actief</span>
     </div>
 
     <div id="controls">
-        <h3>Inspectie Tools</h3>
-        <label>Camera Afstand</label>
-        <input type="range" id="zoom" min="20" max="400" value="100" style="width:100%">
+        <h3>Hitte Controle</h3>
+        <label>Hitte Intensiteit (Glow)</label>
+        <input type="range" id="heatIntensity" min="0" max="1" step="0.1" value="0.6">
         
-        <h4>Positie Vliegtuig 1</h4>
-        <input type="range" id="px" min="-40" max="40" value="-15" style="width:100%">
-        <label>Hoogte (Verdieping 93-99)</label>
-        <input type="range" id="py" min="0" max="50" value="35" style="width:100%">
+        <label>Verticale Positie (Inslag)</label>
+        <input type="range" id="py" min="20" max="42" value="37">
+
+        <label>Horizontale Positie</label>
+        <input type="range" id="px" min="-15" max="15" value="0">
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        <label>Camera Zoom</label>
+        <input type="range" id="zoom" min="20" max="300" value="80">
         
-        <button id="focusImpact">Focus Impact Zone</button>
-        <button id="resetView" style="background:#666">Reset Overzicht</button>
+        <button id="resetView" style="width:100%; margin-top:10px; cursor:pointer;">Reset Camera</button>
     </div>
 
     <script type="importmap">
@@ -71,30 +73,35 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // De Toren (WTC 1) - Meer detail in de structuur
-        function createDetailedTower(height) {
-            const group = new THREE.Group();
-            const h = height / 10;
-            // Buitenkant (licht transparant om kern te tonen)
-            const shell = new THREE.Mesh(
-                new THREE.BoxGeometry(6.34, h, 6.34), 
-                new THREE.MeshPhongMaterial({color: 0xdddddd, transparent: true, opacity: 0.7})
-            );
-            group.add(shell);
-            // De Kern (Core) - Waar de balken aan vastzitten
-            const core = new THREE.Mesh(
-                new THREE.BoxGeometry(2.5, h, 2.5), 
-                new THREE.MeshPhongMaterial({color: 0x666666})
-            );
-            group.add(core);
-            return group;
-        }
+        // 1. De Toren (WTC 1) - Transparant met Kern
+        const towerGroup = new THREE.Group();
+        const height = 41.697; // Schaal 1:10
+        
+        const shell = new THREE.Mesh(
+            new THREE.BoxGeometry(6.34, height, 6.34), 
+            new THREE.MeshPhongMaterial({color: 0xcccccc, transparent: true, opacity: 0.4})
+        );
+        towerGroup.add(shell);
 
-        const tower1 = createDetailedTower(416.97);
-        tower1.position.y = 20.85;
-        scene.add(tower1);
+        const core = new THREE.Mesh(
+            new THREE.BoxGeometry(2.5, height, 2.5), 
+            new THREE.MeshPhongMaterial({color: 0x555555})
+        );
+        towerGroup.add(core);
+        towerGroup.position.y = height/2;
+        scene.add(towerGroup);
 
-        // Boeing 767 (Exacte schaal naar tekening)
+        // 2. Het Hitte-Effect (Glow)
+        const heatGeo = new THREE.SphereGeometry(4, 32, 32);
+        const heatMat = new THREE.MeshBasicMaterial({
+            color: 0xff0000,
+            transparent: true,
+            opacity: 0.6
+        });
+        const heatZone = new THREE.Mesh(heatGeo, heatMat);
+        scene.add(heatZone);
+
+        // 3. De Boeing (Statisch bij de inslag)
         const plane = new THREE.Group();
         const fuselage = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 4.85), new THREE.MeshPhongMaterial({color: 0x3366ff}));
         fuselage.rotation.x = Math.PI/2; plane.add(fuselage);
@@ -104,29 +111,30 @@
 
         const light = new THREE.DirectionalLight(0xffffff, 2);
         light.position.set(50, 100, 50); scene.add(light);
-        scene.add(new THREE.AmbientLight(0xaaaaaa));
+        scene.add(new THREE.AmbientLight(0x999999));
 
         const inputs = {
-            zoom: document.getElementById('zoom'),
+            heat: document.getElementById('heatIntensity'),
+            py: document.getElementById('py'),
             px: document.getElementById('px'),
-            py: document.getElementById('py')
-        };
-
-        let targetLookAt = new THREE.Vector3(0, 35, 0);
-
-        document.getElementById('focusImpact').onclick = () => {
-            targetLookAt.set(0, 35, 0);
-            inputs.zoom.value = 40;
+            zoom: document.getElementById('zoom')
         };
 
         function animate() {
             requestAnimationFrame(animate);
-            const radius = parseFloat(inputs.zoom.value);
-            camera.position.set(radius, radius * 0.5 + 20, radius);
-            camera.lookAt(targetLookAt);
-
-            plane.position.set(parseFloat(inputs.px.value), parseFloat(inputs.py.value), 10);
-            plane.lookAt(0, parseFloat(inputs.py.value), 0);
+            
+            // Update Hitte-zone
+            heatZone.position.set(parseFloat(inputs.px.value), parseFloat(inputs.py.value), 0);
+            heatMat.opacity = parseFloat(inputs.heat.value) * (0.5 + Math.sin(Date.now() * 0.005) * 0.2); // Pulserend effect
+            
+            // Update Vliegtuig positie
+            plane.position.copy(heatZone.position);
+            plane.position.z = 2; // Iets naar voren
+            
+            // Camera positionering
+            const r = parseFloat(inputs.zoom.value);
+            camera.position.set(r, parseFloat(inputs.py.value) + 10, r);
+            camera.lookAt(0, parseFloat(inputs.py.value), 0);
 
             renderer.render(scene, camera);
         }
