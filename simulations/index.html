@@ -2,85 +2,59 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>SimDigity | Advanced Focus Validation</title>
+    <title>SimDigity | Fysica & Massa Validatie</title>
     <style>
-        body { margin: 0; background-color: #FFF; overflow: hidden; font-family: 'Segoe UI', sans-serif; height: 100vh; }
+        body { margin: 0; background-color: #FFF; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
         canvas { display: block; position: fixed; top: 0; left: 0; z-index: 1; }
         
         #ui { position: absolute; top: 20px; left: 20px; color: #333; z-index: 10; pointer-events: none; }
         
+        /* Data Paneel Linksonder */
+        #data-panel {
+            position: absolute; bottom: 20px; left: 20px;
+            background: rgba(0, 0, 0, 0.8); color: #0f0; /* Matrix/Hacker stijl voor data */
+            padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace;
+            z-index: 10; font-size: 0.85em; width: 320px;
+        }
+
         #controls {
             position: absolute; top: 20px; right: 20px; 
-            background: rgba(255, 255, 255, 0.95); 
-            padding: 20px; border-radius: 12px; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            width: 280px; color: #333; z-index: 10;
-            max-height: 90vh; overflow-y: auto;
+            background: rgba(255, 255, 255, 0.95); padding: 20px; 
+            border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            width: 280px; z-index: 10; max-height: 90vh; overflow-y: auto;
         }
-
-        #controls h3 { margin: 0 0 15px 0; font-size: 1.2em; border-bottom: 2px solid #eee; padding-bottom: 5px; }
-        #controls h4 { margin: 15px 0 8px 0; font-size: 0.95em; color: #444; text-transform: uppercase; letter-spacing: 1px; }
-        .control-group { margin-bottom: 12px; }
-        .control-group label { display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 5px; font-weight: 600; }
-        
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px; }
-        button { 
-            padding: 8px; border: none; border-radius: 4px; 
-            background: #007bff; color: white; cursor: pointer; font-size: 0.8em; font-weight: bold;
-        }
-        button:hover { background: #0056b3; }
-        .btn-focus { background: #28a745; } /* Groen voor focus acties */
-        .btn-focus:hover { background: #218838; }
-
-        input[type=range] { width: 100%; cursor: pointer; accent-color: #007bff; }
+        button { width: 100%; padding: 10px; margin-top: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; font-weight: bold; }
+        .data-val { color: #fff; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="ui">
-        <h1>SimDigity</h1>
-        <p>Inspectie-modus: Actief</p>
+        <h1>SimDigity: Fysica Validatie</h1>
+    </div>
+
+    <div id="data-panel">
+        <div style="border-bottom: 1px solid #0f0; margin-bottom: 5px;">LIVE PHYSICAL DATA</div>
+        Massa WTC 1: <span class="data-val">500.000.000 kg</span><br>
+        Massa Boeing 767: <span class="data-val">179.000 kg</span><br>
+        Kerosine Volume: <span class="data-val">38.000 L</span><br>
+        Energie-Potentieel: <span class="data-val">1.4 Terajoule</span><br>
+        <br>
+        <div style="font-size: 0.8em; color: #aaa;">Theorie: Balk-doorbuiging door hitte verzwakt perimeter kolommen.</div>
     </div>
 
     <div id="controls">
-        <h3>Dashboard</h3>
+        <h3>Inspectie Tools</h3>
+        <label>Camera Afstand</label>
+        <input type="range" id="zoom" min="20" max="400" value="100" style="width:100%">
         
-        <div class="control-group">
-            <label>Camera Rotatie</label>
-            <input type="range" id="speedSlider" min="0" max="0.01" step="0.0001" value="0.0015">
-        </div>
-
-        <div class="control-group">
-            <label>Zoom (Afstand)</label>
-            <input type="range" id="zoomSlider" min="20" max="500" value="180">
-        </div>
-
-        <h4>Focus Punten</h4>
-        <div class="btn-grid">
-            <button class="btn-focus" id="focusPlane1">Cockpit Vl. 1</button>
-            <button class="btn-focus" id="focusTower1">Top WTC 1</button>
-            <button class="btn-focus" id="focusPlaza">Reset Plaza</button>
-        </div>
-
-        <h4>Vliegtuig 1 (Blauw)</h4>
-        <div class="control-group">
-            <label>X (N/Z)</label>
-            <input type="range" id="p1x" min="-150" max="150" value="-60">
-        </div>
-        <div class="control-group">
-            <label>Y (Hoogte)</label>
-            <input type="range" id="p1y" min="0" max="100" value="38">
-        </div>
-
-        <h4>Vliegtuig 2 (Rood)</h4>
-        <div class="control-group">
-            <label>X (N/Z)</label>
-            <input type="range" id="p2x" min="-150" max="150" value="60">
-        </div>
-        <div class="control-group">
-            <label>Y (Hoogte)</label>
-            <input type="range" id="p2y" min="0" max="100" value="32">
-        </div>
+        <h4>Positie Vliegtuig 1</h4>
+        <input type="range" id="px" min="-40" max="40" value="-15" style="width:100%">
+        <label>Hoogte (Verdieping 93-99)</label>
+        <input type="range" id="py" min="0" max="50" value="35" style="width:100%">
+        
+        <button id="focusImpact">Focus Impact Zone</button>
+        <button id="resetView" style="background:#666">Reset Overzicht</button>
     </div>
 
     <script type="importmap">
@@ -92,106 +66,71 @@
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0xffffff);
-        
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Object Functies (Schaal 1:10 op basis van je bouwtekeningen)
-        function createBoeing(color) {
-            const group = new THREE.Group();
-            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 4.85, 16), new THREE.MeshPhongMaterial({color, shininess: 80}));
-            body.rotation.x = Math.PI / 2; group.add(body);
-            const wings = new THREE.Mesh(new THREE.BoxGeometry(4.76, 0.05, 1.2), new THREE.MeshPhongMaterial({color}));
-            wings.position.z = 0.5; group.add(wings);
-            return group;
-        }
-
-        function createTower(height, color) {
+        // De Toren (WTC 1) - Meer detail in de structuur
+        function createDetailedTower(height) {
             const group = new THREE.Group();
             const h = height / 10;
-            const body = new THREE.Mesh(new THREE.BoxGeometry(6.34, h, 6.34), new THREE.MeshPhongMaterial({color, transparent: true, opacity: 0.9}));
-            group.add(body);
-            [0.07, 0.4, 0.72, 0.98].forEach(yPos => {
-                const band = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.6, 6.4), new THREE.MeshPhongMaterial({color: 0x222222}));
-                band.position.y = (yPos * h) - (h/2); group.add(band);
-            });
+            // Buitenkant (licht transparant om kern te tonen)
+            const shell = new THREE.Mesh(
+                new THREE.BoxGeometry(6.34, h, 6.34), 
+                new THREE.MeshPhongMaterial({color: 0xdddddd, transparent: true, opacity: 0.7})
+            );
+            group.add(shell);
+            // De Kern (Core) - Waar de balken aan vastzitten
+            const core = new THREE.Mesh(
+                new THREE.BoxGeometry(2.5, h, 2.5), 
+                new THREE.MeshPhongMaterial({color: 0x666666})
+            );
+            group.add(core);
             return group;
         }
 
-        const tower1 = createTower(416.97, 0xcccccc);
-        tower1.position.set(-10, 20.85, -10); scene.add(tower1);
-        const tower2 = createTower(415.14, 0x999999);
-        tower2.position.set(10, 20.75, 10); scene.add(tower2);
+        const tower1 = createDetailedTower(416.97);
+        tower1.position.y = 20.85;
+        scene.add(tower1);
 
-        const plane1 = createBoeing(0x3366ff); scene.add(plane1);
-        const plane2 = createBoeing(0xff3333); scene.add(plane2);
+        // Boeing 767 (Exacte schaal naar tekening)
+        const plane = new THREE.Group();
+        const fuselage = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 4.85), new THREE.MeshPhongMaterial({color: 0x3366ff}));
+        fuselage.rotation.x = Math.PI/2; plane.add(fuselage);
+        const wings = new THREE.Mesh(new THREE.BoxGeometry(4.76, 0.05, 1.2), new THREE.MeshPhongMaterial({color: 0x3366ff}));
+        wings.position.z = 0.5; plane.add(wings);
+        scene.add(plane);
 
-        const floor = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshPhongMaterial({color: 0xeeeeee}));
-        floor.rotation.x = -Math.PI / 2; scene.add(floor);
-
-        const light = new THREE.DirectionalLight(0xffffff, 1.8);
-        light.position.set(100, 200, 100); scene.add(light);
+        const light = new THREE.DirectionalLight(0xffffff, 2);
+        light.position.set(50, 100, 50); scene.add(light);
         scene.add(new THREE.AmbientLight(0xaaaaaa));
 
-        // UI & Focus Logica
         const inputs = {
-            speed: document.getElementById('speedSlider'),
-            zoom: document.getElementById('zoomSlider'),
-            p1x: document.getElementById('p1x'), p1y: document.getElementById('p1y'),
-            p2x: document.getElementById('p2x'), p2y: document.getElementById('p2y')
+            zoom: document.getElementById('zoom'),
+            px: document.getElementById('px'),
+            py: document.getElementById('py')
         };
 
-        let lookAtTarget = new THREE.Vector3(0, 20, 0);
+        let targetLookAt = new THREE.Vector3(0, 35, 0);
 
-        document.getElementById('focusPlane1').onclick = () => {
-            lookAtTarget = plane1.position;
-            inputs.zoom.value = 50; 
-            inputs.speed.value = 0; // Stop rotatie voor inspectie
+        document.getElementById('focusImpact').onclick = () => {
+            targetLookAt.set(0, 35, 0);
+            inputs.zoom.value = 40;
         };
 
-        document.getElementById('focusTower1').onclick = () => {
-            lookAtTarget = new THREE.Vector3(-10, 40, -10);
-            inputs.zoom.value = 80;
-            inputs.speed.value = 0;
-        };
-
-        document.getElementById('focusPlaza').onclick = () => {
-            lookAtTarget = new THREE.Vector3(0, 20, 0);
-            inputs.zoom.value = 180;
-            inputs.speed.value = 0.0015;
-        };
-
-        let angle = 0;
         function animate() {
             requestAnimationFrame(animate);
-            
-            angle += parseFloat(inputs.speed.value);
             const radius = parseFloat(inputs.zoom.value);
-            
-            camera.position.x = radius * Math.cos(angle) + lookAtTarget.x;
-            camera.position.z = radius * Math.sin(angle) + lookAtTarget.z;
-            camera.position.y = radius * 0.5 + lookAtTarget.y;
-            
-            camera.lookAt(lookAtTarget);
+            camera.position.set(radius, radius * 0.5 + 20, radius);
+            camera.lookAt(targetLookAt);
 
-            // Update Vliegtuigen
-            plane1.position.set(parseFloat(inputs.p1x.value), parseFloat(inputs.p1y.value), 10);
-            plane1.lookAt(tower1.position);
-            
-            plane2.position.set(parseFloat(inputs.p2x.value), parseFloat(inputs.p2y.value), 40);
-            plane2.lookAt(tower2.position);
+            plane.position.set(parseFloat(inputs.px.value), parseFloat(inputs.py.value), 10);
+            plane.lookAt(0, parseFloat(inputs.py.value), 0);
 
             renderer.render(scene, camera);
         }
         animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
     </script>
 </body>
 </html>
