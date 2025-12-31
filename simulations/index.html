@@ -2,18 +2,18 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>SimDigity | 3D Fysica Validatie</title>
+    <title>SimDigity | WTC 1 & 2 Validatie</title>
     <style>
         body { margin: 0; background-color: #FFF; overflow: hidden; font-family: sans-serif; }
-        #ui { position: absolute; top: 20px; left: 20px; color: #000; pointer-events: none; }
+        #ui { position: absolute; top: 20px; left: 20px; color: #333; pointer-events: none; }
         canvas { display: block; }
     </style>
 </head>
 <body>
     <div id="ui">
-        <h1>SimDigity: Proto-Civilisatie</h1>
-        <p>Status: Simulatie Actief</p>
-        <p>Doel: Validatie van Natuurwetten (g ≈ 9.81 m/s²)</p>
+        <h1>SimDigity: WTC Architecturale Validatie</h1>
+        <p>Status: Helikopter Inspectie Actief</p>
+        <p>Model: WTC 1 (417m) & WTC 2 (415m)</p>
     </div>
 
     <script type="importmap">
@@ -23,49 +23,87 @@
     <script type="module">
         import * as THREE from 'three';
 
-        // 1. Scene & Camera (Onze waarneming van de werkelijkheid)
+        // 1. Scene & Camera Setup
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        scene.background = new THREE.Color(0xffffff); // Jouw witte achtergrond
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
-        scene.background = new THREE.Color(0xffffff); // Voeg deze regel toe voor een witte achtergrond
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // 2. De Toren (Geometrie van de waarheid)
-        // We simuleren de Twin Towers verhoudingen (63m x 63m x 417m)
-        const geometry = new THREE.BoxGeometry(6.3, 41.7, 6.3); // Schaal 1:10
-        const material = new THREE.MeshPhongMaterial({ color: 0x555555, wireframe: false });
-        const tower = new THREE.Mesh(geometry, material);
-        scene.add(tower);
+        // Functie om een toren te bouwen met mechanische banden (gebaseerd op je tekening)
+        function createTower(height, color, label) {
+            const group = new THREE.Group();
+            const width = 6.34; // Schaal 1:10 van 63.4m
+            const h = height / 10;
 
-        // 3. De Grond (Het nulpunt van de vrije val)
-        const floorGeo = new THREE.PlaneGeometry(100, 100);
-        const floorMat = new THREE.MeshPhongMaterial({ color: 0x999999 });
+            // Hoofdgebouw
+            const bodyGeo = new THREE.BoxGeometry(width, h, width);
+            const bodyMat = new THREE.MeshPhongMaterial({ color: color });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            group.add(body);
+
+            // Mechanische banden toevoegen (de donkere lijnen op je tekening)
+            // Locaties op basis van verdiepingen: ~7-8, 41-42, 75-76, en de top
+            const bandColor = 0x333333;
+            const bandHeights = [h * 0.07, h * 0.40, h * 0.72, h * 0.98]; 
+            
+            bandHeights.forEach(yPos => {
+                const bandGeo = new THREE.BoxGeometry(width + 0.05, 0.5, width + 0.05);
+                const bandMat = new THREE.MeshPhongMaterial({ color: bandColor });
+                const band = new THREE.Mesh(bandGeo, bandMat);
+                band.position.y = yPos - (h / 2);
+                group.add(band);
+            });
+
+            return group;
+        }
+
+        // 2. De Torens plaatsen (Schaal 1:10)
+        // WTC 1 (Noord) - 416.97m
+        const tower1 = createTower(416.97, 0xdddddd);
+        tower1.position.set(-10, 416.97/20, -10); // Diagonaal links-achter
+        scene.add(tower1);
+
+        // WTC 2 (Zuid) - 415.14m
+        const tower2 = createTower(415.14, 0x888888);
+        tower2.position.set(10, 415.14/20, 10); // Diagonaal rechts-voor
+        scene.add(tower2);
+
+        // 3. De Grond (Plaza)
+        const floorGeo = new THREE.PlaneGeometry(300, 300);
+        const floorMat = new THREE.MeshPhongMaterial({ color: 0xeeeeee });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
-        floor.position.y = -21; // Bodem van de toren
+        floor.position.y = 0;
         scene.add(floor);
 
-        // 4. Verlichting (Tegen de duisternis van de Matrix)
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(10, 20, 10);
+        // 4. Verlichting
+        const light = new THREE.DirectionalLight(0xffffff, 1.2);
+        light.position.set(50, 100, 50);
         scene.add(light);
-        scene.add(new THREE.AmbientLight(0x404040));
+        scene.add(new THREE.AmbientLight(0x606060));
 
-        camera.position.set(0, 10, 80);
+        // 5. Animatie (Helikopter View)
+        let angle = 0;
+        const radius = 120; // Afstand van de helikopter
 
-        // 5. Animatie Loop (Lifelines in actie)
         function animate() {
             requestAnimationFrame(animate);
             
-            // Langzame rotatie voor perspectief
-            tower.rotation.y += 0.005;
+            angle += 0.003; // Snelheid van de vlucht
+            camera.position.x = radius * Math.cos(angle);
+            camera.position.z = radius * Math.sin(angle);
+            camera.position.y = 60; // Hoogte van de helikopter
+            
+            // Kijk naar het midden van de Plaza
+            camera.lookAt(0, 20, 0);
             
             renderer.render(scene, camera);
         }
         animate();
 
-        // Responsive resize
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
