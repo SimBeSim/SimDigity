@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>SimDigity | 3D Flight & Zoom Validation</title>
+    <title>SimDigity | Advanced Focus Validation</title>
     <style>
         body { margin: 0; background-color: #FFF; overflow: hidden; font-family: 'Segoe UI', sans-serif; height: 100vh; }
         canvas { display: block; position: fixed; top: 0; left: 0; z-index: 1; }
@@ -23,13 +23,14 @@
         .control-group { margin-bottom: 12px; }
         .control-group label { display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 5px; font-weight: 600; }
         
-        /* Zoom Knoppen Styling */
-        .zoom-btns { display: flex; gap: 10px; margin-top: 5px; }
-        .zoom-btns button { 
-            flex: 1; padding: 8px; border: none; border-radius: 4px; 
-            background: #007bff; color: white; cursor: pointer; font-weight: bold;
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px; }
+        button { 
+            padding: 8px; border: none; border-radius: 4px; 
+            background: #007bff; color: white; cursor: pointer; font-size: 0.8em; font-weight: bold;
         }
-        .zoom-btns button:hover { background: #0056b3; }
+        button:hover { background: #0056b3; }
+        .btn-focus { background: #28a745; } /* Groen voor focus acties */
+        .btn-focus:hover { background: #218838; }
 
         input[type=range] { width: 100%; cursor: pointer; accent-color: #007bff; }
     </style>
@@ -38,7 +39,7 @@
 
     <div id="ui">
         <h1>SimDigity</h1>
-        <p>WTC & Boeing 767 Inspectie</p>
+        <p>Inspectie-modus: Actief</p>
     </div>
 
     <div id="controls">
@@ -50,15 +51,18 @@
         </div>
 
         <div class="control-group">
-            <label>Camera Afstand (Zoom)</label>
-            <input type="range" id="zoomSlider" min="30" max="400" value="180">
-            <div class="zoom-btns">
-                <button id="zoomIn">Dichterbij</button>
-                <button id="zoomOut">Verderaf</button>
-            </div>
+            <label>Zoom (Afstand)</label>
+            <input type="range" id="zoomSlider" min="20" max="500" value="180">
         </div>
 
-        <h4>Vliegtuig 1 (Noord)</h4>
+        <h4>Focus Punten</h4>
+        <div class="btn-grid">
+            <button class="btn-focus" id="focusPlane1">Cockpit Vl. 1</button>
+            <button class="btn-focus" id="focusTower1">Top WTC 1</button>
+            <button class="btn-focus" id="focusPlaza">Reset Plaza</button>
+        </div>
+
+        <h4>Vliegtuig 1 (Blauw)</h4>
         <div class="control-group">
             <label>X (N/Z)</label>
             <input type="range" id="p1x" min="-150" max="150" value="-60">
@@ -67,12 +71,8 @@
             <label>Y (Hoogte)</label>
             <input type="range" id="p1y" min="0" max="100" value="38">
         </div>
-        <div class="control-group">
-            <label>Z (O/W)</label>
-            <input type="range" id="p1z" min="-150" max="150" value="10">
-        </div>
 
-        <h4>Vliegtuig 2 (Zuid)</h4>
+        <h4>Vliegtuig 2 (Rood)</h4>
         <div class="control-group">
             <label>X (N/Z)</label>
             <input type="range" id="p2x" min="-150" max="150" value="60">
@@ -80,10 +80,6 @@
         <div class="control-group">
             <label>Y (Hoogte)</label>
             <input type="range" id="p2y" min="0" max="100" value="32">
-        </div>
-        <div class="control-group">
-            <label>Z (O/W)</label>
-            <input type="range" id="p2z" min="-150" max="150" value="40">
         </div>
     </div>
 
@@ -100,10 +96,9 @@
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
 
-        // Objectbouwers (Schaal 1:10)
+        // Object Functies (Schaal 1:10 op basis van je bouwtekeningen)
         function createBoeing(color) {
             const group = new THREE.Group();
             const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 4.85, 16), new THREE.MeshPhongMaterial({color, shininess: 80}));
@@ -133,43 +128,59 @@
         const plane1 = createBoeing(0x3366ff); scene.add(plane1);
         const plane2 = createBoeing(0xff3333); scene.add(plane2);
 
-        const floor = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshPhongMaterial({color: 0xf3f3f3}));
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshPhongMaterial({color: 0xeeeeee}));
         floor.rotation.x = -Math.PI / 2; scene.add(floor);
 
         const light = new THREE.DirectionalLight(0xffffff, 1.8);
         light.position.set(100, 200, 100); scene.add(light);
         scene.add(new THREE.AmbientLight(0xaaaaaa));
 
-        // UI Elementen koppelen
+        // UI & Focus Logica
         const inputs = {
             speed: document.getElementById('speedSlider'),
             zoom: document.getElementById('zoomSlider'),
-            p1x: document.getElementById('p1x'), p1y: document.getElementById('p1y'), p1z: document.getElementById('p1z'),
-            p2x: document.getElementById('p2x'), p2y: document.getElementById('p2y'), p2z: document.getElementById('p2z')
+            p1x: document.getElementById('p1x'), p1y: document.getElementById('p1y'),
+            p2x: document.getElementById('p2x'), p2y: document.getElementById('p2y')
         };
 
-        // Zoom Knoppen Logica
-        document.getElementById('zoomIn').onclick = () => { inputs.zoom.value = Math.max(30, parseInt(inputs.zoom.value) - 20); };
-        document.getElementById('zoomOut').onclick = () => { inputs.zoom.value = Math.min(400, parseInt(inputs.zoom.value) + 20); };
+        let lookAtTarget = new THREE.Vector3(0, 20, 0);
+
+        document.getElementById('focusPlane1').onclick = () => {
+            lookAtTarget = plane1.position;
+            inputs.zoom.value = 50; 
+            inputs.speed.value = 0; // Stop rotatie voor inspectie
+        };
+
+        document.getElementById('focusTower1').onclick = () => {
+            lookAtTarget = new THREE.Vector3(-10, 40, -10);
+            inputs.zoom.value = 80;
+            inputs.speed.value = 0;
+        };
+
+        document.getElementById('focusPlaza').onclick = () => {
+            lookAtTarget = new THREE.Vector3(0, 20, 0);
+            inputs.zoom.value = 180;
+            inputs.speed.value = 0.0015;
+        };
 
         let angle = 0;
         function animate() {
             requestAnimationFrame(animate);
             
-            // Camera beweging
             angle += parseFloat(inputs.speed.value);
             const radius = parseFloat(inputs.zoom.value);
             
-            camera.position.x = radius * Math.cos(angle);
-            camera.position.z = radius * Math.sin(angle);
-            camera.position.y = radius * 0.5; // Hoogte schaalt mee met zoom voor beter overzicht
-            camera.lookAt(0, 20, 0);
+            camera.position.x = radius * Math.cos(angle) + lookAtTarget.x;
+            camera.position.z = radius * Math.sin(angle) + lookAtTarget.z;
+            camera.position.y = radius * 0.5 + lookAtTarget.y;
+            
+            camera.lookAt(lookAtTarget);
 
-            // Vliegtuigen updaten
-            plane1.position.set(parseFloat(inputs.p1x.value), parseFloat(inputs.p1y.value), parseFloat(inputs.p1z.value));
+            // Update Vliegtuigen
+            plane1.position.set(parseFloat(inputs.p1x.value), parseFloat(inputs.p1y.value), 10);
             plane1.lookAt(tower1.position);
             
-            plane2.position.set(parseFloat(inputs.p2x.value), parseFloat(inputs.p2y.value), parseFloat(inputs.p2z.value));
+            plane2.position.set(parseFloat(inputs.p2x.value), parseFloat(inputs.p2y.value), 40);
             plane2.lookAt(tower2.position);
 
             renderer.render(scene, camera);
