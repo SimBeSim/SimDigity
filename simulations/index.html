@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>SimDigity | WTC 1 & 2 Validatie</title>
+    <title>SimDigity | WTC & Boeing Validatie</title>
     <style>
         body { margin: 0; background-color: #FFF; overflow: hidden; font-family: sans-serif; }
         #ui { position: absolute; top: 20px; left: 20px; color: #333; pointer-events: none; }
@@ -11,9 +11,9 @@
 </head>
 <body>
     <div id="ui">
-        <h1>SimDigity: WTC Architecturale Validatie</h1>
-        <p>Status: Helikopter Inspectie Actief</p>
-        <p>Model: WTC 1 (417m) & WTC 2 (415m)</p>
+        <h1>SimDigity: Multi-Object Validatie</h1>
+        <p>Status: Fysica-inspectie Boeing 767 & WTC</p>
+        <p>Schaal: 1:10 (Real-world metrics)</p>
     </div>
 
     <script type="importmap">
@@ -23,92 +23,104 @@
     <script type="module">
         import * as THREE from 'three';
 
-        // 1. Scene & Camera Setup
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xffffff); // Jouw witte achtergrond
+        scene.background = new THREE.Color(0xffffff);
         
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Functie om een toren te bouwen met mechanische banden (gebaseerd op je tekening)
-        function createTower(height, color, label) {
-            const group = new THREE.Group();
-            const width = 6.34; // Schaal 1:10 van 63.4m
-            const h = height / 10;
-
-            // Hoofdgebouw
-            const bodyGeo = new THREE.BoxGeometry(width, h, width);
-            const bodyMat = new THREE.MeshPhongMaterial({ color: color });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            group.add(body);
-
-            // Mechanische banden toevoegen (de donkere lijnen op je tekening)
-            // Locaties op basis van verdiepingen: ~7-8, 41-42, 75-76, en de top
-            const bandColor = 0x333333;
-            const bandHeights = [h * 0.07, h * 0.40, h * 0.72, h * 0.98]; 
+        // --- 1. FUNCTIE VOOR DE BOEING 767-200 (Schaal 1:10) ---
+        function createBoeing767(color) {
+            const airplane = new THREE.Group();
             
-            bandHeights.forEach(yPos => {
-                const bandGeo = new THREE.BoxGeometry(width + 0.05, 0.5, width + 0.05);
-                const bandMat = new THREE.MeshPhongMaterial({ color: bandColor });
-                const band = new THREE.Mesh(bandGeo, bandMat);
-                band.position.y = yPos - (h / 2);
+            // Romp (Fuselage): Lengte 48.5m -> 4.85 units
+            const fuselageGeo = new THREE.CylinderGeometry(0.25, 0.25, 4.85, 16);
+            const fuselageMat = new THREE.MeshPhongMaterial({ color: color });
+            const fuselage = new THREE.Mesh(fuselageGeo, fuselageMat);
+            fuselage.rotation.x = Math.PI / 2;
+            airplane.add(fuselage);
+
+            // Vleugels (Wings): Spanwijdte 47.6m -> 4.76 units
+            const wingGeo = new THREE.BoxGeometry(4.76, 0.05, 1.2);
+            const wingMat = new THREE.MeshPhongMaterial({ color: color });
+            const wings = new THREE.Mesh(wingGeo, wingMat);
+            wings.position.z = 0.2; // Iets naar voren op de romp
+            airplane.add(wings);
+
+            // Staartvleugel (Horizontal Stabilizer)
+            const tailWingGeo = new THREE.BoxGeometry(1.5, 0.05, 0.5);
+            const tailWing = new THREE.Mesh(tailWingGeo, wingMat);
+            tailWing.position.z = -2.1;
+            airplane.add(tailWing);
+
+            // Staartvin (Vertical Stabilizer)
+            const finGeo = new THREE.BoxGeometry(0.05, 0.8, 0.6);
+            const fin = new THREE.Mesh(finGeo, wingMat);
+            fin.position.y = 0.4;
+            fin.position.z = -2.1;
+            airplane.add(fin);
+
+            return airplane;
+        }
+
+        // --- 2. DE TORENS BOUWEN ---
+        function createTower(height, color) {
+            const group = new THREE.Group();
+            const width = 6.34; // 63.4m
+            const h = height / 10;
+            const body = new THREE.Mesh(new THREE.BoxGeometry(width, h, width), new THREE.MeshPhongMaterial({ color: color }));
+            group.add(body);
+            // Mechanische banden
+            [0.07, 0.40, 0.72, 0.98].forEach(y => {
+                const band = new THREE.Mesh(new THREE.BoxGeometry(width + 0.1, 0.5, width + 0.1), new THREE.MeshPhongMaterial({ color: 0x333333 }));
+                band.position.y = (y * h) - (h / 2);
                 group.add(band);
             });
-
             return group;
         }
 
-        // 2. De Torens plaatsen (Schaal 1:10)
-        // WTC 1 (Noord) - 416.97m
-        const tower1 = createTower(416.97, 0xdddddd);
-        tower1.position.set(-10, 416.97/20, -10); // Diagonaal links-achter
+        const tower1 = createTower(416.97, 0xdddddd); // WTC 1
+        tower1.position.set(-10, 20.85, -10);
         scene.add(tower1);
 
-        // WTC 2 (Zuid) - 415.14m
-        const tower2 = createTower(415.14, 0x888888);
-        tower2.position.set(10, 415.14/20, 10); // Diagonaal rechts-voor
+        const tower2 = createTower(415.14, 0x888888); // WTC 2
+        tower2.position.set(10, 20.75, 10);
         scene.add(tower2);
 
-        // 3. De Grond (Plaza)
-        const floorGeo = new THREE.PlaneGeometry(300, 300);
-        const floorMat = new THREE.MeshPhongMaterial({ color: 0xeeeeee });
-        const floor = new THREE.Mesh(floorGeo, floorMat);
-        floor.rotation.x = -Math.PI / 2;
-        floor.position.y = 0;
-        scene.add(floor);
+        // --- 3. DE VLIEGTUIGEN PLAATSEN ---
+        const plane1 = createBoeing767(0x5555ff); // Blauwachtig vliegtuig
+        plane1.position.set(-40, 35, 10); // Nadert vanuit een hoek
+        plane1.lookAt(-10, 35, -10); // Kijkt richting WTC 1
+        scene.add(plane1);
 
-        // 4. Verlichting
+        const plane2 = createBoeing767(0xff5555); // Roodachtig vliegtuig
+        plane2.position.set(40, 30, 40);
+        plane2.lookAt(10, 30, 10); // Kijkt richting WTC 2
+        scene.add(plane2);
+
+        // Grond en Licht
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(500, 500), new THREE.MeshPhongMaterial({ color: 0xeeeeee }));
+        floor.rotation.x = -Math.PI / 2;
+        scene.add(floor);
         const light = new THREE.DirectionalLight(0xffffff, 1.2);
         light.position.set(50, 100, 50);
         scene.add(light);
-        scene.add(new THREE.AmbientLight(0x606060));
+        scene.add(new THREE.AmbientLight(0x707070));
 
-        // 5. Animatie (Helikopter View)
+        // --- 4. ANIMATIE (Helikopter View) ---
         let angle = 0;
-        const radius = 120; // Afstand van de helikopter
-
         function animate() {
             requestAnimationFrame(animate);
-            
-            angle += 0.003; // Snelheid van de vlucht
-            camera.position.x = radius * Math.cos(angle);
-            camera.position.z = radius * Math.sin(angle);
-            camera.position.y = 60; // Hoogte van de helikopter
-            
-            // Kijk naar het midden van de Plaza
+            angle += 0.002;
+            camera.position.x = 150 * Math.cos(angle);
+            camera.position.z = 150 * Math.sin(angle);
+            camera.position.y = 80;
             camera.lookAt(0, 20, 0);
-            
             renderer.render(scene, camera);
         }
         animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
     </script>
 </body>
 </html>
