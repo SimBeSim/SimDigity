@@ -2,69 +2,74 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>SimDigity | Interactieve Validatie</title>
+    <title>SimDigity | 3D Flight Validation</title>
     <style>
-        body { margin: 0; background-color: #FFF; overflow: hidden; font-family: sans-serif; }
-        /* Bestaande UI links */
-        #ui { position: absolute; top: 20px; left: 20px; color: #333; pointer-events: none; }
+        body { margin: 0; background-color: #FFF; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: 100vh; }
+        canvas { display: block; position: fixed; top: 0; left: 0; z-index: 1; }
         
-        /* NIEUW: Het Besturingspaneel rechts */
+        #ui { position: absolute; top: 20px; left: 20px; color: #333; z-index: 10; pointer-events: none; }
+        
         #controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(245, 245, 245, 0.9); /* Lichtgrijs en beetje doorzichtig */
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            width: 250px;
-            color: #333;
+            position: absolute; top: 20px; right: 20px; 
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 20px; border-radius: 12px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            width: 280px; color: #333; z-index: 10;
+            max-height: 90vh; overflow-y: auto;
         }
-        #controls h3 { margin-top: 0; font-size: 1.1em; border-bottom: 1px solid #ccc; padding-bottom: 5px;}
-        #controls h4 { margin: 10px 0 5px 0; font-size: 0.95em; color: #555; }
-        .control-group { margin-bottom: 10px; }
-        .control-group label { display: block; font-size: 0.85em; margin-bottom: 3px; }
-        input[type=range] { width: 100%; cursor: pointer; }
 
-        canvas { display: block; }
+        #controls h3 { margin: 0 0 15px 0; font-size: 1.2em; color: #000; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        #controls h4 { margin: 15px 0 8px 0; font-size: 0.95em; color: #444; text-transform: uppercase; letter-spacing: 1px; }
+        .control-group { margin-bottom: 12px; }
+        .control-group label { display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 5px; font-weight: 600; }
+        .control-group label span { color: #007bff; }
+        input[type=range] { width: 100%; cursor: pointer; accent-color: #007bff; }
     </style>
 </head>
 <body>
+
     <div id="ui">
-        <h1>SimDigity: Interactieve Validatie</h1>
-        <p>Status: Besturing Geactiveerd</p>
-        <p>Schaal: 1:10 (WTC & Boeing 767)</p>
+        <h1>SimDigity</h1>
+        <p>Project: WTC Fysica Validatie</p>
+        <p>Status: Interactieve Inspectie</p>
     </div>
 
     <div id="controls">
-        <h3>Besturingspaneel</h3>
+        <h3>Dashboard</h3>
         
         <div class="control-group">
-            <label for="speedSlider">Rotatiesnelheid Camera</label>
+            <label>Camera Snelheid</label>
             <input type="range" id="speedSlider" min="0" max="0.01" step="0.0001" value="0.002">
         </div>
 
-        <h4>Vliegtuig 1 (Blauw)</h4>
+        <h4>Vliegtuig 1 (Noord)</h4>
         <div class="control-group">
-            <label for="p1x">Positie X (Noord/Zuid)</label>
-            <input type="range" id="p1x" min="-150" max="150" step="1" value="-40">
+            <label>Positie X <span>(N/Z)</span></label>
+            <input type="range" id="p1x" min="-150" max="150" value="-60">
         </div>
         <div class="control-group">
-            <label for="p1z">Positie Z (Oost/West)</label>
-            <input type="range" id="p1z" min="-150" max="150" step="1" value="10">
+            <label>Hoogte Y <span>(Altitude)</span></label>
+            <input type="range" id="p1y" min="0" max="100" value="38">
+        </div>
+        <div class="control-group">
+            <label>Positie Z <span>(O/W)</span></label>
+            <input type="range" id="p1z" min="-150" max="150" value="10">
         </div>
 
-        <h4>Vliegtuig 2 (Rood)</h4>
+        <h4>Vliegtuig 2 (Zuid)</h4>
         <div class="control-group">
-            <label for="p2x">Positie X (Noord/Zuid)</label>
-            <input type="range" id="p2x" min="-150" max="150" step="1" value="40">
+            <label>Positie X <span>(N/Z)</span></label>
+            <input type="range" id="p2x" min="-150" max="150" value="60">
         </div>
         <div class="control-group">
-            <label for="p2z">Positie Z (Oost/West)</label>
-            <input type="range" id="p2z" min="-150" max="150" step="1" value="40">
+            <label>Hoogte Y <span>(Altitude)</span></label>
+            <input type="range" id="p2y" min="0" max="100" value="32">
+        </div>
+        <div class="control-group">
+            <label>Positie Z <span>(O/W)</span></label>
+            <input type="range" id="p2z" min="-150" max="150" value="40">
         </div>
     </div>
-
 
     <script type="importmap">
         { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
@@ -73,65 +78,92 @@
     <script type="module">
         import * as THREE from 'three';
 
-        // --- SETUP (Hetzelfde als voorheen) ---
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0xffffff);
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 3000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
 
-        // --- FUNCTIES VOOR OBJECTEN (Hetzelfde als voorheen) ---
-        function createBoeing767(color) {
-            const airplane = new THREE.Group();
-            // Romp 48.5m
-            const fuselage = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 4.85, 16), new THREE.MeshPhongMaterial({ color: color }));
-            fuselage.rotation.x = Math.PI / 2;
-            airplane.add(fuselage);
-            // Vleugels 47.6m
-            const wings = new THREE.Mesh(new THREE.BoxGeometry(4.76, 0.05, 1.2), new THREE.MeshPhongMaterial({ color: color }));
-            wings.position.z = 0.2;
-            airplane.add(wings);
-            // Staart
-            const tailWing = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.05, 0.5), new THREE.MeshPhongMaterial({ color: color }));
-            tailWing.position.z = -2.1;
-            airplane.add(tailWing);
-            const fin = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.8, 0.6), new THREE.MeshPhongMaterial({ color: color }));
-            fin.position.y = 0.4; fin.position.z = -2.1;
-            airplane.add(fin);
-            return airplane;
+        function createBoeing(color) {
+            const group = new THREE.Group();
+            // Fuselage (Length 4.85 = 48.5m)
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 4.85, 16), new THREE.MeshPhongMaterial({color, shininess: 80}));
+            body.rotation.x = Math.PI / 2; group.add(body);
+            // Wings (Span 4.76 = 47.6m)
+            const wings = new THREE.Mesh(new THREE.BoxGeometry(4.76, 0.05, 1.2), new THREE.MeshPhongMaterial({color}));
+            wings.position.z = 0.5; group.add(wings);
+            // Tail
+            const tail = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.05, 0.6), new THREE.MeshPhongMaterial({color}));
+            tail.position.z = -2.1; group.add(tail);
+            return group;
         }
 
         function createTower(height, color) {
             const group = new THREE.Group();
-            const width = 6.34; const h = height / 10;
-            group.add(new THREE.Mesh(new THREE.BoxGeometry(width, h, width), new THREE.MeshPhongMaterial({ color: color })));
-            [0.07, 0.40, 0.72, 0.98].forEach(y => {
-                const band = new THREE.Mesh(new THREE.BoxGeometry(width + 0.1, 0.5, width + 0.1), new THREE.MeshPhongMaterial({ color: 0x333333 }));
-                band.position.y = (y * h) - (h / 2); group.add(band);
+            const h = height / 10;
+            const body = new THREE.Mesh(new THREE.BoxGeometry(6.34, h, 6.34), new THREE.MeshPhongMaterial({color, transparent: true, opacity: 0.9}));
+            group.add(body);
+            // Mechanical Bands (Skylobbies)
+            [0.07, 0.4, 0.72, 0.98].forEach(yPos => {
+                const band = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.6, 6.4), new THREE.MeshPhongMaterial({color: 0x222222}));
+                band.position.y = (yPos * h) - (h/2); group.add(band);
             });
             return group;
         }
 
-        // --- PLAATSING OBJECTEN ---
-        const tower1 = createTower(416.97, 0xdddddd);
+        const tower1 = createTower(416.97, 0xcccccc);
         tower1.position.set(-10, 20.85, -10); scene.add(tower1);
-        const tower2 = createTower(415.14, 0x888888);
+
+        const tower2 = createTower(415.14, 0x999999);
         tower2.position.set(10, 20.75, 10); scene.add(tower2);
 
-        // Vliegtuigen (Startposities moeten matchen met de sliders!)
-        const plane1 = createBoeing767(0x5555ff);
-        plane1.position.set(-40, 35, 10); // Startwaarden van sliders p1x en p1z
-        plane1.lookAt(-10, 35, -10);
-        scene.add(plane1);
+        const plane1 = createBoeing(0x3366ff); scene.add(plane1);
+        const plane2 = createBoeing(0xff3333); scene.add(plane2);
 
-        const plane2 = createBoeing767(0xff5555);
-        plane2.position.set(40, 30, 40); // Startwaarden van sliders p2x en p2z
-        plane2.lookAt(10, 30, 10);
-        scene.add(plane2);
-
-        const floor = new THREE.Mesh(new THREE.PlaneGeometry(500, 500), new THREE.MeshPhongMaterial({ color: 0xeeeeee }));
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshPhongMaterial({color: 0xeeeeee}));
         floor.rotation.x = -Math.PI / 2; scene.add(floor);
-        
-        const light = new THREE.DirectionalLight(0xffffff, 1.2);
-        light.position
+
+        const light = new THREE.DirectionalLight(0xffffff, 1.8);
+        light.position.set(100, 200, 100); scene.add(light);
+        scene.add(new THREE.AmbientLight(0x999999));
+
+        // UI Selectors
+        const s = {
+            speed: document.getElementById('speedSlider'),
+            p1x: document.getElementById('p1x'), p1y: document.getElementById('p1y'), p1z: document.getElementById('p1z'),
+            p2x: document.getElementById('p2x'), p2y: document.getElementById('p2y'), p2z: document.getElementById('p2z')
+        };
+
+        let angle = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            angle += parseFloat(s.speed.value);
+            camera.position.x = 200 * Math.cos(angle);
+            camera.position.z = 200 * Math.sin(angle);
+            camera.position.y = 120;
+            camera.lookAt(0, 30, 0);
+
+            // Update Plane 1 position and orientation
+            plane1.position.set(parseFloat(s.p1x.value), parseFloat(s.p1y.value), parseFloat(s.p1z.value));
+            plane1.lookAt(tower1.position);
+            
+            // Update Plane 2 position and orientation
+            plane2.position.set(parseFloat(s.p2x.value), parseFloat(s.p2y.value), parseFloat(s.p2z.value));
+            plane2.lookAt(tower2.position);
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
