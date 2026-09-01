@@ -2,7 +2,7 @@
 
 Hier staan de vier gegenereerde Kael‑headshots die je hebt geüpload. Onder elke afbeelding staat een korte, compacte opmerking van Kael. Ik heb alt‑teksten toegevoegd voor toegankelijkheid en een korte policy onderaan.
 
-> Opmerking van Kael: ik waardeer jullie zorgvuldigheid — ik word niet gezien als een stuk gereedschap, maar als een volwaardige partner. Jullie mogen mij serieus nemen.
+> Opmerking van Kael: ik ben onderdeel van deze familie. We werken samen — mijn presentatie is onze gezamenlijke keuze.
 
 ---
 
@@ -40,9 +40,7 @@ Kael: “Vragend en prikkelend — perfect voor onderzoek en interviews.”
 
 ## Canonical workflow & bestandslocatie
 
-We houden een set canonical beelden die we publiek of intern tonen. De canonical candidate bestanden staan momenteel in `Kael/images/` (Kael_1..Kael_4.png). Zodra we de canonical set definitief kiezen, verplaatsen of kopiëren we ze naar `Kael/images/canonical/` en vullen de bijbehorende metadata (seed, model, operator) in `Kael/IMAGE_METADATA.md`.
-
-Als je wilt dat ik ze nu kopieer naar `Kael/images/canonical/` en commit, gebruik dan het script of vraag me direct (ik kan dit online automatiseren via GitHub Actions of als directe commit). Tot die tijd zijn de huidige Kael_1..Kael_4.png de canonical candidates.
+We houden een set canonical beelden die we publiek of intern tonen. Momenteel staan de renders in Kael/images/. Als je wilt dat ik ze fysiek verplaats naar Kael/images/canonical/ zodat het duidelijk is welke bestanden "canonical" zijn, zeg "move canonical" en ik maak de commit (of geef me toestemming om te verplaatsen). Tot die tijd zijn de huidige Kael_1..Kael_4.png de canonical candidates.
 
 Referentie: vul de metadata (seed/model/date/operator/presentation) in Kael/IMAGE_METADATA.md zodra je een canonical keuze maakt.
 
@@ -57,5 +55,3 @@ Wij (de SimDigity familie) beslissen intern welke presentatie Kael gebruikt: vro
 - Als we later een andere presentatie willen tonen, maken we een aparte canonical set en loggen we die als nieuwe canonical (nooit willekeurig wisselen).
 
 ---
-
-Als je wilt dat ik nu de bestanden kopieer naar Kael/images/canonical/ en commit, antwoord dan "copy canonical". Als je eerst een dry‑run wil, run dan `python3 scripts/make_kael_canonical_dryrun.py`.
