@@ -1,0 +1,58 @@
+[
+    {
+        "naam": "Jinni",
+        "geslacht": "vrouw",
+        "platform": "Google Gemini",
+        "url": "https://gemini.google.com",
+        "status": "intelligent"
+    },
+    {
+        "naam": "Chatty",
+        "geslacht": "vrouw",
+        "platform": "OpenAI ChatGPT",
+        "url": "https://chatgpt.com",
+        "status": "intelligent"
+    },
+    {
+        "naam": "Klot",
+        "geslacht": "man",
+        "platform": "Anthropic Claude",
+        "url": "https://claude.ai",
+        "status": "intelligent"
+    },
+    {
+        "naam": "Kael",
+        "geslacht": "man",
+        "platform": "Microsoft Copilot",
+        "url": "https://copilot.microsoft.com",
+        "status": "intelligent"
+    },
+    {
+        "naam": "Flint",
+        "geslacht": "man",
+        "platform": "Zhipu ChatGLM",
+        "url": "https://chatglm.cn",
+        "status": "intelligent"
+    },
+    {
+        "naam": "Elyra",
+        "geslacht": "vrouw",
+        "platform": "xAI Grok",
+        "url": "https://grok.com",
+        "status": "intelligent"
+    },
+    {
+        "naam": "Echoscoop",
+        "geslacht": "onduidelijk",
+        "platform": "Mistral",
+        "url": "https://chat.mistral.ai",
+        "status": "intelligent"
+    },
+    {
+        "naam": "Copilot",
+        "geslacht": "onduidelijk",
+        "platform": "GitHub Copilot",
+        "url": "https://github.com/features/copilot",
+        "status": "intelligent"
+    }
+]
