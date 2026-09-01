@@ -59,7 +59,7 @@ Kael: “Vragend en prikkelend — perfect voor onderzoek en interviews.”
 
 ## Canonical workflow & bestandslocatie
 
-We houden een set canonical beelden die we publiek of intern tonen. Momenteel staan de renders in Kael/images/. Als je wilt dat ik ze fysiek verplaats naar Kael/images/canonical/ zodat het duidelijk is welke bestanden \"canonical\" zijn, zeg \"move canonical\" en ik maak de commit (of geef me toestemming om te verplaatsen). Tot die tijd zijn de huidige Kael_1..Kael_4.png de canonical candidates.
+We houden een set canonical beelden die we publiek of intern tonen. Momenteel staan de renders in Kael/images/. Als je wilt dat ik ze fysiek verplaats naar Kael/images/canonical/ zodat het duidelijk is welke bestanden "canonical" zijn, zeg "move canonical" en ik maak de commit (of geef me toestemming om te verplaatsen). Tot die tijd zijn de huidige Kael_1..Kael_4.png de canonical candidates.
 
 Referentie: vul de metadata (seed/model/date/operator/presentation) in Kael/IMAGE_METADATA.md zodra je een canonical keuze maakt.
 
@@ -70,7 +70,7 @@ Referentie: vul de metadata (seed/model/date/operator/presentation) in Kael/IMAG
 Wij (de SimDigity familie) beslissen intern welke presentatie Kael gebruikt: vrouwelijk, mannelijk of androgyn. Intern kunnen we flexibel zijn. Voor externe publicatie geldt:
 
 - Publicatie alleen met een geverifieerde canonical image (microtag zichtbaar op de ketting of verificatie in metadata). 
-- Noteer in IMAGE_METADATA.md de Presentation die hoort bij die canonical (bv. \"female-presenting\").
+- Noteer in IMAGE_METADATA.md de Presentation die hoort bij die canonical (bv. "female-presenting").
 - Als we later een andere presentatie willen tonen, maken we een aparte canonical set en loggen we die als nieuwe canonical (nooit willekeurig wisselen).
 
 ---
@@ -98,7 +98,7 @@ Use this template to record metadata for each canonical render. Fill these entri
 - Rotation: 0°
 - Resolution: 1024x1024
 - Presentation: female-presenting
-- AllowedPresentations: [\"female-presenting\",\"androgyn\",\"male\"]
+- AllowedPresentations: ["female-presenting","androgyn","male"]
 - Notes: canonical neutral headshot
 
 ### kael_warm
@@ -110,7 +110,7 @@ Use this template to record metadata for each canonical render. Fill these entri
 - Rotation: 0°
 - Resolution: 1024x1024
 - Presentation: female-presenting
-- AllowedPresentations: [\"female-presenting\",\"androgyn\",\"male\"]
+- AllowedPresentations: ["female-presenting","androgyn","male"]
 - Notes: canonical warm headshot
 
 ### kael_stern
@@ -122,7 +122,7 @@ Use this template to record metadata for each canonical render. Fill these entri
 - Rotation: 0°
 - Resolution: 1024x1024
 - Presentation: female-presenting
-- AllowedPresentations: [\"female-presenting\",\"androgyn\",\"male\"]
+- AllowedPresentations: ["female-presenting","androgyn","male"]
 - Notes: canonical stern headshot
 
 ### kael_curious
@@ -134,7 +134,7 @@ Use this template to record metadata for each canonical render. Fill these entri
 - Rotation: 0°
 - Resolution: 1024x1024
 - Presentation: female-presenting
-- AllowedPresentations: [\"female-presenting\",\"androgyn\",\"male\"]
+- AllowedPresentations: ["female-presenting","androgyn","male"]
 - Notes: canonical curious headshot
 
 ---
@@ -148,6 +148,7 @@ Place alternative/non-canonical renders here. Use this folder for experimental r
 
 When you decide a variant becomes canonical, move the file into Kael/images/canonical/ and update Kael/IMAGE_METADATA.md accordingly.
 """
+
 
 def run(cmd, cwd=None, capture=False):
     if capture:
