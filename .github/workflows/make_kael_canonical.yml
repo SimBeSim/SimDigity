@@ -20,11 +20,22 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Configure git (for automated commits)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git status
+          git remote -v
+
       - name: Ensure script is executable
         run: chmod +x scripts/make_kael_canonical.py || true
 
-      - name: Run make_kael_canonical script
-        run: python3 scripts/make_kael_canonical.py --yes
+      - name: Run make_kael_canonical script (with verbose)
+        run: |
+          set -x
+          python3 scripts/make_kael_canonical.py --yes
 
-      - name: Show git status
-        run: git status --porcelain --untracked-files=all || true
+      - name: Show git status & recent commits
+        run: |
+          git status --porcelain --untracked-files=all || true
+          git --no-pager log -n 5 --oneline || true
